@@ -3,12 +3,14 @@ package de.libutzki.axon.playground.axon.embedded.server;
 import static org.axonframework.commandhandling.GenericCommandResultMessage.asCommandResultMessage;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.axonframework.commandhandling.CommandBus;
@@ -16,6 +18,15 @@ import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.NoHandlerForCommandException;
 import org.axonframework.common.ObjectUtils;
+import org.axonframework.common.stream.BlockingStream;
+import org.axonframework.eventhandling.DomainEventMessage;
+import org.axonframework.eventhandling.EventBus;
+import org.axonframework.eventhandling.EventMessage;
+import org.axonframework.eventhandling.TrackedEventMessage;
+import org.axonframework.eventhandling.TrackingToken;
+import org.axonframework.eventsourcing.eventstore.DomainEventStream;
+import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
+import org.axonframework.eventsourcing.eventstore.EventStore;
 import org.axonframework.queryhandling.NoHandlerForQueryException;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryMessage;
@@ -30,10 +41,19 @@ import de.libutzki.axon.playground.axon.common.EmbeddedServer;
  * The {@code DefaultEmbeddedServer} is threadsafe, as long as the registered {@link CommandBus CommandBusses} and
  * {@link QueryBus QueryBusses} are threadsafe.
  */
+
 public final class DefaultEmbeddedServer implements EmbeddedServer {
 
 	private final ConcurrentMap<String, CommandBus> commandBusMap = new ConcurrentHashMap<>( );
 	private final ConcurrentMap<String, Set<QueryBus>> queryBusMap = new ConcurrentHashMap<>( );
+
+	private final EventStorageEngine eventStorageEngine;
+	private final EventStore eventStore;
+
+	public DefaultEmbeddedServer( final EventStorageEngine eventStorageEngine, final EventStore eventStore ) {
+		this.eventStorageEngine = eventStorageEngine;
+		this.eventStore = eventStore;
+	}
 
 	@Override
 	public <C, R> void dispatch( final CommandMessage<C> command, final CommandCallback<? super C, ? super R> callback ) {
@@ -97,6 +117,37 @@ public final class DefaultEmbeddedServer implements EmbeddedServer {
 					final long leftTimeout = ObjectUtils.getRemainingOfDeadline( deadline );
 					return queryBus.scatterGather( query, leftTimeout, TimeUnit.MILLISECONDS );
 				} );
+	}
+
+	@Override
+	public void registerEventBusForEvent( final EventBus eventBus, final Consumer<List<? extends EventMessage<?>>> messageProcessor ) {
+		eventStore.subscribe( messageProcessor );
+	}
+
+	@Override
+	public boolean unregisterEventBusForEvent( final EventBus eventBus, final Consumer<List<? extends EventMessage<?>>> messageProcessor ) {
+		return false;
+	}
+
+	@Override
+	public void publish( final List<? extends EventMessage<?>> events ) {
+		eventStore.publish( events );
+
+	}
+
+	@Override
+	public BlockingStream<TrackedEventMessage<?>> openStream( final TrackingToken trackingToken ) {
+		return eventStore.openStream( trackingToken );
+	}
+
+	@Override
+	public DomainEventStream readEvents( final String aggregateIdentifier ) {
+		return eventStorageEngine.readEvents( aggregateIdentifier );
+	}
+
+	@Override
+	public void storeSnapshot( final DomainEventMessage<?> snapshot ) {
+		eventStorageEngine.storeSnapshot( snapshot );
 	}
 
 }

@@ -1,7 +1,5 @@
-package de.libutzki.axon.playground.axon.embedded.server;
+package de.libutzki.axon.playground.axon.embedded.eventstore;
 
-import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
-import org.axonframework.eventsourcing.eventstore.EventStore;
 import org.axonframework.springboot.autoconfig.AxonAutoConfiguration;
 import org.axonframework.springboot.autoconfig.AxonServerAutoConfiguration;
 import org.axonframework.springboot.autoconfig.EventProcessingAutoConfiguration;
@@ -18,16 +16,10 @@ import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoCon
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
-
-import de.libutzki.axon.playground.axon.common.EmbeddedServer;
-import de.libutzki.axon.playground.infra.SpringInfraConfiguration;
 
 @Configuration
-@PropertySource( "classpath:de/libutzki/axon/playground/axon/embedded/server/application.properties" )
 @Import( {
 		ValidationAutoConfiguration.class,
 		DataSourceAutoConfiguration.class,
@@ -45,13 +37,7 @@ import de.libutzki.axon.playground.infra.SpringInfraConfiguration;
 		AxonServerAutoConfiguration.class,
 		InfraConfiguration.class,
 		PropertyPlaceholderAutoConfiguration.class,
-		SpringInfraConfiguration.class
 } )
-public class EmbeddedServerConfiguration {
-
-	@Bean
-	public EmbeddedServer embeddedServer( final EventStorageEngine eventStorageEngine, final EventStore eventStore ) {
-		return new DefaultEmbeddedServer( eventStorageEngine, eventStore );
-	}
+public class EmbeddedEventStoreConfiguration {
 
 }

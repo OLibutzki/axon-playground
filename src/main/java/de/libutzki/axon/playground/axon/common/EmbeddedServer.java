@@ -1,13 +1,22 @@
 package de.libutzki.axon.playground.axon.common;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.NoHandlerForCommandException;
+import org.axonframework.common.stream.BlockingStream;
+import org.axonframework.eventhandling.DomainEventMessage;
+import org.axonframework.eventhandling.EventBus;
+import org.axonframework.eventhandling.EventMessage;
+import org.axonframework.eventhandling.TrackedEventMessage;
+import org.axonframework.eventhandling.TrackingToken;
+import org.axonframework.eventsourcing.eventstore.DomainEventStream;
 import org.axonframework.queryhandling.NoHandlerForQueryException;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryMessage;
@@ -102,5 +111,35 @@ public interface EmbeddedServer {
 	<Q, R> CompletableFuture<QueryResponseMessage<R>> query( QueryMessage<Q, R> query );
 
 	<Q, R> Stream<QueryResponseMessage<R>> scatterGather( QueryMessage<Q, R> query, long timeout, TimeUnit unit );
+
+	/**
+	 * Registers the given event bus for the given event name.
+	 *
+	 * @param eventBus
+	 *                  The event bus to be registered
+	 * @param eventName
+	 *                  The event name.
+	 */
+	void registerEventBusForEvent( EventBus eventBus, Consumer<List<? extends EventMessage<?>>> messageProcessor );
+
+	/**
+	 * Unregisters the given event bus for the given event name.
+	 *
+	 * @param eventBus
+	 *                  The event bus to be registered
+	 * @param eventName
+	 *                  The event name.
+	 *
+	 * @return true if and only if the query bus has been removed.
+	 */
+	boolean unregisterEventBusForEvent( EventBus eventBus, Consumer<List<? extends EventMessage<?>>> messageProcessor );
+
+	void publish( final List<? extends EventMessage<?>> events );
+
+	BlockingStream<TrackedEventMessage<?>> openStream( final TrackingToken trackingToken );
+
+	DomainEventStream readEvents( final String aggregateIdentifier );
+
+	void storeSnapshot( final DomainEventMessage<?> snapshot );
 
 }
