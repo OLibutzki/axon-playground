@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Import;
 		ValidationAutoConfiguration.class,
 		DataSourceAutoConfiguration.class,
 		HibernateJpaAutoConfiguration.class,
+		EmbeddedServerClientConfiguration.class,
 		MetricsAutoConfiguration.class,
 		MicrometerMetricsAutoConfiguration.class,
 		EventProcessingAutoConfiguration.class,
@@ -34,7 +35,6 @@ import org.springframework.context.annotation.Import;
 		NoOpTransactionAutoConfiguration.class,
 		// Unsere Konfiguration für the Embedded-Server-Fall muss vor AxonAutoConfiguration laufen, da ansonsten Axon
 		// möglicherweise auf die Idee kommt, die Busse selbst zu erzeugen.
-		EmbeddedServerClientConfiguration.class,
 		AxonAutoConfiguration.class,
 		ObjectMapperAutoConfiguration.class,
 		AxonServerAutoConfiguration.class,
