@@ -3,7 +3,6 @@ package de.libutzki.axon.playground.axon.client;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.SimpleCommandBus;
 import org.axonframework.common.transaction.TransactionManager;
-import org.axonframework.eventhandling.SimpleEventBus;
 import org.axonframework.eventsourcing.eventstore.EventStore;
 import org.axonframework.messaging.interceptors.CorrelationDataInterceptor;
 import org.axonframework.queryhandling.LoggingQueryInvocationErrorHandler;
@@ -23,12 +22,8 @@ import de.libutzki.axon.playground.axon.common.EmbeddedServer;
 class EmbeddedServerClientConfiguration {
 
 	@Bean
-	public EventStore embeddedEventStore( final EmbeddedServer embeddedServer, final AxonConfiguration axonConfiguration ) {
-		// We create the bus here to avoid that we have multiple busses in the spring conect.
-		final SimpleEventBus simpleEventBus = SimpleEventBus.builder( )
-				.messageMonitor( axonConfiguration.messageMonitor( EventStore.class, "eventStore" ) )
-				.build( );
-		return new EmbeddedEventBus( embeddedServer, simpleEventBus );
+	public EventStore embeddedEventStore( final EmbeddedServer embeddedServer ) {
+		return new EmbeddedEventStore( embeddedServer );
 	}
 
 	@Bean

@@ -18,15 +18,16 @@ import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.NoHandlerForCommandException;
 import org.axonframework.common.ObjectUtils;
+import org.axonframework.common.Registration;
 import org.axonframework.common.stream.BlockingStream;
 import org.axonframework.eventhandling.DomainEventMessage;
-import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventMessage;
 import org.axonframework.eventhandling.TrackedEventMessage;
 import org.axonframework.eventhandling.TrackingToken;
 import org.axonframework.eventsourcing.eventstore.DomainEventStream;
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
 import org.axonframework.eventsourcing.eventstore.EventStore;
+import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.queryhandling.NoHandlerForQueryException;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryMessage;
@@ -120,16 +121,6 @@ public final class DefaultEmbeddedServer implements EmbeddedServer {
 	}
 
 	@Override
-	public void registerEventBusForEvent( final EventBus eventBus, final Consumer<List<? extends EventMessage<?>>> messageProcessor ) {
-		eventStore.subscribe( messageProcessor );
-	}
-
-	@Override
-	public boolean unregisterEventBusForEvent( final EventBus eventBus, final Consumer<List<? extends EventMessage<?>>> messageProcessor ) {
-		return false;
-	}
-
-	@Override
 	public void publish( final List<? extends EventMessage<?>> events ) {
 		eventStore.publish( events );
 
@@ -148,6 +139,16 @@ public final class DefaultEmbeddedServer implements EmbeddedServer {
 	@Override
 	public void storeSnapshot( final DomainEventMessage<?> snapshot ) {
 		eventStorageEngine.storeSnapshot( snapshot );
+	}
+
+	@Override
+	public Registration registerEventProcessor( final Consumer<List<? extends EventMessage<?>>> messageProcessor ) {
+		return eventStore.subscribe( messageProcessor );
+	}
+
+	@Override
+	public Registration registerDispatchInterceptor( final MessageDispatchInterceptor<? super EventMessage<?>> dispatchInterceptor ) {
+		return eventStore.registerDispatchInterceptor( dispatchInterceptor );
 	}
 
 }

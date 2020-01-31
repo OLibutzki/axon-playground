@@ -10,13 +10,14 @@ import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.NoHandlerForCommandException;
+import org.axonframework.common.Registration;
 import org.axonframework.common.stream.BlockingStream;
 import org.axonframework.eventhandling.DomainEventMessage;
-import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventMessage;
 import org.axonframework.eventhandling.TrackedEventMessage;
 import org.axonframework.eventhandling.TrackingToken;
 import org.axonframework.eventsourcing.eventstore.DomainEventStream;
+import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.axonframework.queryhandling.NoHandlerForQueryException;
 import org.axonframework.queryhandling.QueryBus;
 import org.axonframework.queryhandling.QueryMessage;
@@ -120,19 +121,7 @@ public interface EmbeddedServer {
 	 * @param eventName
 	 *                  The event name.
 	 */
-	void registerEventBusForEvent( EventBus eventBus, Consumer<List<? extends EventMessage<?>>> messageProcessor );
-
-	/**
-	 * Unregisters the given event bus for the given event name.
-	 *
-	 * @param eventBus
-	 *                  The event bus to be registered
-	 * @param eventName
-	 *                  The event name.
-	 *
-	 * @return true if and only if the query bus has been removed.
-	 */
-	boolean unregisterEventBusForEvent( EventBus eventBus, Consumer<List<? extends EventMessage<?>>> messageProcessor );
+	Registration registerEventProcessor( Consumer<List<? extends EventMessage<?>>> messageProcessor );
 
 	void publish( final List<? extends EventMessage<?>> events );
 
@@ -141,5 +130,7 @@ public interface EmbeddedServer {
 	DomainEventStream readEvents( final String aggregateIdentifier );
 
 	void storeSnapshot( final DomainEventMessage<?> snapshot );
+
+	Registration registerDispatchInterceptor( MessageDispatchInterceptor<? super EventMessage<?>> dispatchInterceptor );
 
 }

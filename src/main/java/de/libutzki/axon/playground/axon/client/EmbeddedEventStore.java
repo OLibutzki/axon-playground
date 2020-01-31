@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import org.axonframework.common.Registration;
 import org.axonframework.common.stream.BlockingStream;
 import org.axonframework.eventhandling.DomainEventMessage;
-import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventMessage;
 import org.axonframework.eventhandling.TrackedEventMessage;
 import org.axonframework.eventhandling.TrackingToken;
@@ -16,25 +15,17 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 
 import de.libutzki.axon.playground.axon.common.EmbeddedServer;
 
-final class EmbeddedEventBus implements EventStore {
+final class EmbeddedEventStore implements EventStore {
 
 	private final EmbeddedServer embeddedServer;
-	private final EventBus localEventBus;
 
-	public EmbeddedEventBus( final EmbeddedServer embeddedServer, final EventBus localEventBus ) {
+	public EmbeddedEventStore( final EmbeddedServer embeddedServer ) {
 		this.embeddedServer = embeddedServer;
-		this.localEventBus = localEventBus;
 	}
 
 	@Override
-	public Registration subscribe( final Consumer<List<? extends EventMessage<?>>> messageProcessor ) {
-		final Registration delegateRegistration = localEventBus.subscribe( messageProcessor );
-		embeddedServer.registerEventBusForEvent( localEventBus, messageProcessor );
-		return ( ) -> {
-			final boolean delegateCancelationSuccessful = delegateRegistration.cancel( );
-			final boolean wrapperCancelationSuccessful = embeddedServer.unregisterEventBusForEvent( localEventBus, messageProcessor );
-			return delegateCancelationSuccessful && wrapperCancelationSuccessful;
-		};
+	public Registration subscribe( final Consumer<List<? extends EventMessage<?>>> eventProcessor ) {
+		return embeddedServer.registerEventProcessor( eventProcessor );
 	}
 
 	@Override
@@ -45,7 +36,7 @@ final class EmbeddedEventBus implements EventStore {
 
 	@Override
 	public Registration registerDispatchInterceptor( final MessageDispatchInterceptor<? super EventMessage<?>> dispatchInterceptor ) {
-		return localEventBus.registerDispatchInterceptor( dispatchInterceptor );
+		return embeddedServer.registerDispatchInterceptor( dispatchInterceptor );
 	}
 
 	@Override

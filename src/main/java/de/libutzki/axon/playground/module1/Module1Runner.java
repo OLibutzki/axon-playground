@@ -31,7 +31,7 @@ public class Module1Runner implements CommandLineRunner {
 		final Module2Command command = new Module2Command( "Command sent by module 1" );
 		log.info( "Sending command: " + command );
 		commandGateway.sendAndWait( command );
-		final Module1Event event = new Module1Event( "Event publised by module 1" );
+		final Module1Event event = new Module1Event( "Event published by module 1" );
 		log.info( "Publishing event: " + event );
 		eventGateway.publish( event );
 	}
