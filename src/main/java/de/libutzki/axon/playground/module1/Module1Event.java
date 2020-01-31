@@ -1,5 +1,8 @@
 package de.libutzki.axon.playground.module1;
 
+import de.libutzki.axon.playground.axon.embedded.eventstore.LocalEvent;
+
+@LocalEvent
 public class Module1Event {
 	private final String payload;
 

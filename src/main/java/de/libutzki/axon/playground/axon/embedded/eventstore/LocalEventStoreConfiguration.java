@@ -47,8 +47,8 @@ public class LocalEventStoreConfiguration {
 
 	@Bean
 	@Primary
-	EventStore localEventStore( @Qualifier( "eventStore" ) final EventStore localEventStore, @Qualifier( "embeddedEventStore" ) final EventStore globalEventStore ) {
-		return new LocalEventStore( localEventStore, globalEventStore );
+	EventStore localEventStore( @Qualifier( "eventStore" ) final EventStore localEventStore, @Qualifier( "embeddedEventStore" ) final EventStore globalEventStore, final org.axonframework.config.Configuration configuration ) {
+		return new LocalEventStore( localEventStore, globalEventStore, configuration );
 	}
 
 	@Qualifier( "eventStore" )
