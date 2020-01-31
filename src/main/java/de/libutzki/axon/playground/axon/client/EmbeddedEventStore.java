@@ -15,7 +15,7 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 
 import de.libutzki.axon.playground.axon.common.EmbeddedServer;
 
-final class EmbeddedEventStore implements EventStore {
+public final class EmbeddedEventStore implements EventStore {
 
 	private final EmbeddedServer embeddedServer;
 

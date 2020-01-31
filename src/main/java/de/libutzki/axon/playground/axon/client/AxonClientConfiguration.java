@@ -19,6 +19,8 @@ import org.springframework.boot.autoconfigure.validation.ValidationAutoConfigura
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import de.libutzki.axon.playground.axon.embedded.eventstore.LocalEventStoreConfiguration;
+
 @Configuration
 @Import( {
 		ValidationAutoConfiguration.class,
@@ -32,9 +34,10 @@ import org.springframework.context.annotation.Import;
 		JdbcAutoConfiguration.class,
 		TransactionAutoConfiguration.class,
 		NoOpTransactionAutoConfiguration.class,
+		EmbeddedServerClientConfiguration.class,
 		// Unsere Konfiguration für the Embedded-Server-Fall muss vor AxonAutoConfiguration laufen, da ansonsten Axon
 		// möglicherweise auf die Idee kommt, die Busse selbst zu erzeugen.
-		EmbeddedServerClientConfiguration.class,
+		LocalEventStoreConfiguration.class,
 		AxonAutoConfiguration.class,
 		ObjectMapperAutoConfiguration.class,
 		AxonServerAutoConfiguration.class,
