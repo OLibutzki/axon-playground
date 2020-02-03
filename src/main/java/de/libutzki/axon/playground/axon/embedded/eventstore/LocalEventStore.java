@@ -8,9 +8,7 @@ import org.axonframework.common.stream.BlockingStream;
 import org.axonframework.common.transaction.TransactionManager;
 import org.axonframework.config.Configuration;
 import org.axonframework.eventhandling.DomainEventMessage;
-import org.axonframework.eventhandling.EventHandlerInvoker;
 import org.axonframework.eventhandling.EventMessage;
-import org.axonframework.eventhandling.Segment;
 import org.axonframework.eventhandling.TrackedEventMessage;
 import org.axonframework.eventhandling.TrackingEventProcessor;
 import org.axonframework.eventhandling.TrackingToken;
@@ -22,27 +20,31 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LocalEventStore implements EventStore, EventHandlerInvoker {
+public class LocalEventStore implements EventStore {
 
 	private static final Logger log = LoggerFactory.getLogger( LocalEventStore.class );
 
 	private final EventStore localEventStore;
 	private final EventStore globalEventStore;
+	private final String moduleName;
 
 	private final MultiStreamableMessageSource messageSource;
 	private final TrackingEventProcessor trackingEventProcessor;
 
-	public LocalEventStore( final EventStore localEventStore, final EventStore globalEventStore, final Configuration configuration ) {
+	private final LocalEventHandlerInvoker localEventHandlerInvoker;
+
+	public LocalEventStore( final EventStore localEventStore, final EventStore globalEventStore, final Configuration configuration, final String moduleName ) {
 		this.localEventStore = localEventStore;
 		this.globalEventStore = globalEventStore;
+		this.moduleName = moduleName;
 		messageSource = MultiStreamableMessageSource.builder( )
 				.addMessageSource( "localEventStore", localEventStore )
 				.addMessageSource( "globalEventStore", globalEventStore )
 				.build( );
-
+		localEventHandlerInvoker = new LocalEventHandlerInvoker( globalEventStore, moduleName );
 		trackingEventProcessor = TrackingEventProcessor.builder( )
 				.name( "localEventStoreTracker" )
-				.eventHandlerInvoker( this )
+				.eventHandlerInvoker( localEventHandlerInvoker )
 				.messageMonitor( configuration.messageMonitor( TrackingEventProcessor.class, "localEventStoreTracker" ) )
 				.messageSource( localEventStore )
 				.tokenStore( configuration.getComponent( TokenStore.class ) )
@@ -84,8 +86,9 @@ public class LocalEventStore implements EventStore, EventHandlerInvoker {
 
 	@Override
 	public BlockingStream<TrackedEventMessage<?>> openStream( final TrackingToken trackingToken ) {
-
-		return messageSource.openStream( trackingToken );
+		final BlockingStream<TrackedEventMessage<?>> blockingStream = messageSource.openStream( trackingToken );
+		blockingStream.asStream( ).filter( message -> message.getMetaData( ).getOrDefault( "moduleName", "" ).equals( moduleName ) );
+		return blockingStream;
 	}
 
 	@Override
@@ -100,17 +103,4 @@ public class LocalEventStore implements EventStore, EventHandlerInvoker {
 		localEventStore.storeSnapshot( snapshot );
 		globalEventStore.storeSnapshot( snapshot );
 	}
-
-	@Override
-	public boolean canHandle( final EventMessage<?> eventMessage, final Segment segment ) {
-		final Class<?> payloadType = eventMessage.getPayloadType( );
-		return !payloadType.isAnnotationPresent( LocalEvent.class );
-	}
-
-	@Override
-	public void handle( final EventMessage<?> eventMessage, final Segment segment ) throws Exception {
-		log.debug( "Event published to global event store: " + eventMessage );
-		globalEventStore.publish( eventMessage );
-	}
-
 }

@@ -16,6 +16,7 @@ import org.axonframework.springboot.autoconfig.NoOpTransactionAutoConfiguration;
 import org.axonframework.springboot.autoconfig.ObjectMapperAutoConfiguration;
 import org.axonframework.springboot.autoconfig.TransactionAutoConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
@@ -47,8 +48,8 @@ public class LocalEventStoreConfiguration {
 
 	@Bean
 	@Primary
-	EventStore localEventStore( @Qualifier( "eventStore" ) final EventStore localEventStore, @Qualifier( "embeddedEventStore" ) final EventStore globalEventStore, final org.axonframework.config.Configuration configuration ) {
-		return new LocalEventStore( localEventStore, globalEventStore, configuration );
+	EventStore localEventStore( @Qualifier( "eventStore" ) final EventStore localEventStore, @Qualifier( "embeddedEventStore" ) final EventStore globalEventStore, final org.axonframework.config.Configuration configuration, @Value( "$moduleName" ) final String moduleName ) {
+		return new LocalEventStore( localEventStore, globalEventStore, configuration, moduleName );
 	}
 
 	@Qualifier( "eventStore" )
