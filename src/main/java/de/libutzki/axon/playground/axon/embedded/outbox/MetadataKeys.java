@@ -1,4 +1,4 @@
-package de.libutzki.axon.playground.axon.embedded.eventstore;
+package de.libutzki.axon.playground.axon.embedded.outbox;
 
 public interface MetadataKeys {
 

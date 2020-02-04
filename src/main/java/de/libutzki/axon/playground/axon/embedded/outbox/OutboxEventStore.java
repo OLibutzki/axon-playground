@@ -1,4 +1,4 @@
-package de.libutzki.axon.playground.axon.embedded.eventstore;
+package de.libutzki.axon.playground.axon.embedded.outbox;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -22,10 +22,10 @@ import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LocalEventStore implements EventStore {
+public class OutboxEventStore implements EventStore {
 
 	@SuppressWarnings( "unused" )
-	private static final Logger log = LoggerFactory.getLogger( LocalEventStore.class );
+	private static final Logger log = LoggerFactory.getLogger( OutboxEventStore.class );
 
 	private final EventStore localEventStore;
 	private final EventStore globalEventStore;
@@ -37,7 +37,7 @@ public class LocalEventStore implements EventStore {
 
 	private final Predicate<? extends EventMessage<?>> filter;
 
-	public LocalEventStore( final EventStore localEventStore, final EventStore globalEventStore, final Configuration configuration, final String origin ) {
+	public OutboxEventStore( final EventStore localEventStore, final EventStore globalEventStore, final Configuration configuration, final String origin ) {
 		this.localEventStore = localEventStore;
 		this.globalEventStore = globalEventStore;
 		filter = eventMessage -> !eventMessage.getMetaData( ).getOrDefault( MetadataKeys.ORIGIN, "" ).equals( origin );

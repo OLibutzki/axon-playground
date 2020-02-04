@@ -1,4 +1,4 @@
-package de.libutzki.axon.playground.axon.embedded.eventstore;
+package de.libutzki.axon.playground.axon.embedded.outbox;
 
 import java.util.Collections;
 
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 final class GlobalEventPublisher implements EventHandlerInvoker {
 
-	private static final Logger log = LoggerFactory.getLogger( LocalEventStore.class );
+	private static final Logger log = LoggerFactory.getLogger( OutboxEventStore.class );
 
 	private final EventStore globalEventStore;
 	private final String origin;

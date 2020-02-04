@@ -1,4 +1,4 @@
-package de.libutzki.axon.playground.axon.embedded.eventstore;
+package de.libutzki.axon.playground.axon.embedded.outbox;
 
 import org.axonframework.eventsourcing.eventstore.EmbeddedEventStore;
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
@@ -44,20 +44,19 @@ import org.springframework.context.annotation.Primary;
 		AxonServerAutoConfiguration.class,
 		PropertyPlaceholderAutoConfiguration.class,
 } )
-public class LocalEventStoreConfiguration {
+public class OutboxEventStoreConfiguration {
 
 	@Bean
 	@Primary
-	EventStore localEventStore( @Qualifier( "eventStore" ) final EventStore localEventStore, @Qualifier( "embeddedEventStore" ) final EventStore globalEventStore, final org.axonframework.config.Configuration configuration, @Value( "${modulename}" ) final String modulename ) {
-		return new LocalEventStore( localEventStore, globalEventStore, configuration, modulename );
+	EventStore outboxEventStore( @Qualifier( "localEventStore" ) final EventStore localEventStore, @Qualifier( "eventStore" ) final EventStore globalEventStore, final org.axonframework.config.Configuration configuration, @Value( "${modulename}" ) final String modulename ) {
+		return new OutboxEventStore( localEventStore, globalEventStore, configuration, modulename );
 	}
 
-	@Qualifier( "eventStore" )
-	@Bean( name = "eventBus" )
+	@Bean( name = "localEventStore" )
 	public EmbeddedEventStore eventStore( final EventStorageEngine storageEngine, final AxonConfiguration configuration ) {
 		return EmbeddedEventStore.builder( )
 				.storageEngine( storageEngine )
-				.messageMonitor( configuration.messageMonitor( EventStore.class, "eventStore" ) )
+				.messageMonitor( configuration.messageMonitor( EventStore.class, "localEventStore" ) )
 				.build( );
 	}
 

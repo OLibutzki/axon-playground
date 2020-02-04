@@ -12,6 +12,7 @@ import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.queryhandling.SimpleQueryBus;
 import org.axonframework.spring.config.AxonConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,13 +22,15 @@ import de.libutzki.axon.playground.axon.common.EmbeddedServer;
 @ConditionalOnBean( EmbeddedServer.class )
 class EmbeddedServerClientConfiguration {
 
-	@Bean
+	@Bean( name = "eventStore" )
+	@ConditionalOnMissingBean( name = "eventStore" )
 	public EventStore embeddedEventStore( final EmbeddedServer embeddedServer ) {
 		return new EmbeddedEventStore( embeddedServer );
 	}
 
 	@Bean
-	public CommandBus embeddedCommandBus( final EmbeddedServer embeddedServer, final AxonConfiguration axonConfiguration, final TransactionManager transactionManager ) {
+	@ConditionalOnMissingBean( name = "commandBus" )
+	public CommandBus commandBus( final EmbeddedServer embeddedServer, final AxonConfiguration axonConfiguration, final TransactionManager transactionManager ) {
 		// We create the bus here to avoid that we have multiple busses in the spring conect.
 		final SimpleCommandBus simpleCommandBus = SimpleCommandBus.builder( )
 				.transactionManager( transactionManager )
@@ -39,7 +42,8 @@ class EmbeddedServerClientConfiguration {
 	}
 
 	@Bean
-	public QueryBus embeddedQueryBus( final EmbeddedServer embeddedServer, final AxonConfiguration axonConfiguration, final TransactionManager transactionManager ) {
+	@ConditionalOnMissingBean( name = "queryBus" )
+	public QueryBus queryBus( final EmbeddedServer embeddedServer, final AxonConfiguration axonConfiguration, final TransactionManager transactionManager ) {
 		// We create the bus here to avoid that we have multiple busses in the spring conect. Also in the case of the query bus,
 		// this is for some reason analogous to how the real axon server query bus is created.
 		final SimpleQueryBus simpleQueryBus = SimpleQueryBus.builder( )

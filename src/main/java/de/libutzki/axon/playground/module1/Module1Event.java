@@ -1,6 +1,6 @@
 package de.libutzki.axon.playground.module1;
 
-import de.libutzki.axon.playground.axon.embedded.eventstore.LocalEvent;
+import de.libutzki.axon.playground.axon.embedded.outbox.LocalEvent;
 
 @LocalEvent
 public class Module1Event {

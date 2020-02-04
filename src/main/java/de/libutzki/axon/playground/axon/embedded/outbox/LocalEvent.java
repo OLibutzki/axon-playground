@@ -1,4 +1,4 @@
-package de.libutzki.axon.playground.axon.embedded.eventstore;
+package de.libutzki.axon.playground.axon.embedded.outbox;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

@@ -1,4 +1,4 @@
-package de.libutzki.axon.playground.axon.embedded.eventstore;
+package de.libutzki.axon.playground.axon.embedded.outbox;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -8,6 +8,16 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.axonframework.common.stream.BlockingStream;
 
+/**
+ * 
+ * Caution: this class is a hack! It's just a POC that it is possible to filter a {@link BlockingStream}.
+ * 
+ * The {@link Awaitility} dependency has to be removed as it's intended to be used by tests.
+ * 
+ * @author oliver.libutzki
+ *
+ * @param <M>
+ */
 public class FilteringBlockingStream<M> implements BlockingStream<M> {
 
 	private final BlockingStream<M> delegate;

@@ -1,6 +1,9 @@
 package de.libutzki.axon.playground.module1;
 
+import org.axonframework.modelling.command.TargetAggregateIdentifier;
+
 public class Module1Command {
+	@TargetAggregateIdentifier
 	private final String payload;
 
 	public Module1Command( final String payload ) {

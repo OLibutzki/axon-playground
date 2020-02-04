@@ -19,7 +19,7 @@ import org.springframework.boot.autoconfigure.validation.ValidationAutoConfigura
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import de.libutzki.axon.playground.axon.embedded.eventstore.LocalEventStoreConfiguration;
+import de.libutzki.axon.playground.axon.embedded.outbox.OutboxEventStoreConfiguration;
 
 @Configuration
 @Import( {
@@ -37,7 +37,7 @@ import de.libutzki.axon.playground.axon.embedded.eventstore.LocalEventStoreConfi
 		EmbeddedServerClientConfiguration.class,
 		// Unsere Konfiguration für the Embedded-Server-Fall muss vor AxonAutoConfiguration laufen, da ansonsten Axon
 		// möglicherweise auf die Idee kommt, die Busse selbst zu erzeugen.
-		LocalEventStoreConfiguration.class,
+		OutboxEventStoreConfiguration.class,
 		AxonAutoConfiguration.class,
 		ObjectMapperAutoConfiguration.class,
 		AxonServerAutoConfiguration.class,
