@@ -31,7 +31,7 @@ public class LocalEventStore implements EventStore {
 	private final MultiStreamableMessageSource messageSource;
 	private final TrackingEventProcessor trackingEventProcessor;
 
-	private final LocalEventHandlerInvoker localEventHandlerInvoker;
+	private final GlobalEventPublisher localEventHandlerInvoker;
 
 	public LocalEventStore( final EventStore localEventStore, final EventStore globalEventStore, final Configuration configuration, final String moduleName ) {
 		this.localEventStore = localEventStore;
@@ -41,7 +41,7 @@ public class LocalEventStore implements EventStore {
 				.addMessageSource( "localEventStore", localEventStore )
 				.addMessageSource( "globalEventStore", globalEventStore )
 				.build( );
-		localEventHandlerInvoker = new LocalEventHandlerInvoker( globalEventStore, moduleName );
+		localEventHandlerInvoker = new GlobalEventPublisher( globalEventStore, moduleName );
 		trackingEventProcessor = TrackingEventProcessor.builder( )
 				.name( "localEventStoreTracker" )
 				.eventHandlerInvoker( localEventHandlerInvoker )
@@ -86,8 +86,8 @@ public class LocalEventStore implements EventStore {
 
 	@Override
 	public BlockingStream<TrackedEventMessage<?>> openStream( final TrackingToken trackingToken ) {
-		final BlockingStream<TrackedEventMessage<?>> blockingStream = messageSource.openStream( trackingToken );
-		blockingStream.asStream( ).filter( message -> message.getMetaData( ).getOrDefault( "moduleName", "" ).equals( moduleName ) );
+		final BlockingStream<TrackedEventMessage<?>> delegateStream = messageSource.openStream( trackingToken );
+		final BlockingStream<TrackedEventMessage<?>> blockingStream = new FilteringBlockingStream<>( delegateStream, candidate -> !candidate.getMetaData( ).getOrDefault( "moduleName", "" ).equals( moduleName ) );
 		return blockingStream;
 	}
 
