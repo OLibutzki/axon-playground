@@ -2,6 +2,7 @@ package de.libutzki.axon.playground.axon.embedded.eventstore;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.axonframework.common.Registration;
 import org.axonframework.common.stream.BlockingStream;
@@ -16,32 +17,35 @@ import org.axonframework.eventhandling.tokenstore.TokenStore;
 import org.axonframework.eventsourcing.MultiStreamableMessageSource;
 import org.axonframework.eventsourcing.eventstore.DomainEventStream;
 import org.axonframework.eventsourcing.eventstore.EventStore;
+import org.axonframework.eventsourcing.eventstore.FilteringDomainEventStream;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LocalEventStore implements EventStore {
 
+	@SuppressWarnings( "unused" )
 	private static final Logger log = LoggerFactory.getLogger( LocalEventStore.class );
 
 	private final EventStore localEventStore;
 	private final EventStore globalEventStore;
-	private final String moduleName;
 
 	private final MultiStreamableMessageSource messageSource;
 	private final TrackingEventProcessor trackingEventProcessor;
 
 	private final GlobalEventPublisher localEventHandlerInvoker;
 
-	public LocalEventStore( final EventStore localEventStore, final EventStore globalEventStore, final Configuration configuration, final String moduleName ) {
+	private final Predicate<? extends EventMessage<?>> filter;
+
+	public LocalEventStore( final EventStore localEventStore, final EventStore globalEventStore, final Configuration configuration, final String origin ) {
 		this.localEventStore = localEventStore;
 		this.globalEventStore = globalEventStore;
-		this.moduleName = moduleName;
+		filter = eventMessage -> !eventMessage.getMetaData( ).getOrDefault( MetadataKeys.ORIGIN, "" ).equals( origin );
 		messageSource = MultiStreamableMessageSource.builder( )
-				.addMessageSource( "localEventStore", localEventStore )
 				.addMessageSource( "globalEventStore", globalEventStore )
+				.addMessageSource( "localEventStore", localEventStore )
 				.build( );
-		localEventHandlerInvoker = new GlobalEventPublisher( globalEventStore, moduleName );
+		localEventHandlerInvoker = new GlobalEventPublisher( globalEventStore, origin );
 		trackingEventProcessor = TrackingEventProcessor.builder( )
 				.name( "localEventStoreTracker" )
 				.eventHandlerInvoker( localEventHandlerInvoker )
@@ -87,7 +91,8 @@ public class LocalEventStore implements EventStore {
 	@Override
 	public BlockingStream<TrackedEventMessage<?>> openStream( final TrackingToken trackingToken ) {
 		final BlockingStream<TrackedEventMessage<?>> delegateStream = messageSource.openStream( trackingToken );
-		final BlockingStream<TrackedEventMessage<?>> blockingStream = new FilteringBlockingStream<>( delegateStream, candidate -> !candidate.getMetaData( ).getOrDefault( "moduleName", "" ).equals( moduleName ) );
+		@SuppressWarnings( "unchecked" )
+		final BlockingStream<TrackedEventMessage<?>> blockingStream = new FilteringBlockingStream<>( delegateStream, ( Predicate<TrackedEventMessage<?>> ) filter );
 		return blockingStream;
 	}
 
@@ -95,7 +100,9 @@ public class LocalEventStore implements EventStore {
 	public DomainEventStream readEvents( final String aggregateIdentifier ) {
 		final DomainEventStream localEventStoreEventStream = localEventStore.readEvents( aggregateIdentifier );
 		final DomainEventStream globalEventStoreEventStream = globalEventStore.readEvents( aggregateIdentifier );
-		return DomainEventStream.concat( localEventStoreEventStream, globalEventStoreEventStream );
+		@SuppressWarnings( "unchecked" )
+		final FilteringDomainEventStream filteredGlobalEventStoreEventStream = new FilteringDomainEventStream( globalEventStoreEventStream, ( Predicate<? super DomainEventMessage<?>> ) filter );
+		return DomainEventStream.concat( localEventStoreEventStream, filteredGlobalEventStoreEventStream );
 	}
 
 	@Override

@@ -52,6 +52,11 @@ public class FilteringBlockingStream<M> implements BlockingStream<M> {
 
 	@Override
 	public M nextAvailable( ) throws InterruptedException {
+		Optional<M> nextElementOptional = peek( );
+		while ( !nextElementOptional.isPresent( ) ) {
+			Thread.sleep( 1000 );
+			nextElementOptional = peek( );
+		}
 		return delegate.nextAvailable( );
 	}
 
