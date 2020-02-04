@@ -13,6 +13,7 @@ import org.axonframework.springboot.autoconfig.NoOpTransactionAutoConfiguration;
 import org.axonframework.springboot.autoconfig.ObjectMapperAutoConfiguration;
 import org.axonframework.springboot.autoconfig.TransactionAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
@@ -34,17 +35,18 @@ import de.libutzki.axon.playground.axon.embedded.outbox.OutboxEventStoreConfigur
 		JdbcAutoConfiguration.class,
 		TransactionAutoConfiguration.class,
 		NoOpTransactionAutoConfiguration.class,
-		EmbeddedServerClientConfiguration.class,
 		// Unsere Konfiguration für the Embedded-Server-Fall muss vor AxonAutoConfiguration laufen, da ansonsten Axon
 		// möglicherweise auf die Idee kommt, die Busse selbst zu erzeugen.
+		AxonServerAutoConfiguration.class,
+		EmbeddedServerClientConfiguration.class,
 		OutboxEventStoreConfiguration.class,
 		AxonAutoConfiguration.class,
 		ObjectMapperAutoConfiguration.class,
-		AxonServerAutoConfiguration.class,
 		InfraConfiguration.class,
 		PropertyPlaceholderAutoConfiguration.class,
 } )
 // These entity scans are copied from JpaAutoConfiguration and JpaEventStoreAutoConfiguration
+@EntityScan( { "org.axonframework.eventhandling.tokenstore", "org.axonframework.modelling.saga.repository.jpa", "org.axonframework.eventsourcing.eventstore.jpa" } )
 //@EntityScan( { "org.axonframework.eventhandling.tokenstore", "org.axonframework.modelling.saga.repository.jpa", "org.axonframework.eventsourcing.eventstore.jpa" } )
 public class AxonClientConfiguration {
 

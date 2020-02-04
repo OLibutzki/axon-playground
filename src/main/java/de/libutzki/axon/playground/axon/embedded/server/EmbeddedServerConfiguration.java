@@ -15,6 +15,7 @@ import org.axonframework.springboot.autoconfig.NoOpTransactionAutoConfiguration;
 import org.axonframework.springboot.autoconfig.ObjectMapperAutoConfiguration;
 import org.axonframework.springboot.autoconfig.TransactionAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
@@ -47,6 +48,7 @@ import de.libutzki.axon.playground.infra.SpringInfraConfiguration;
 		PropertyPlaceholderAutoConfiguration.class,
 		SpringInfraConfiguration.class
 } )
+@EntityScan( { "org.axonframework.eventhandling.tokenstore", "org.axonframework.modelling.saga.repository.jpa", "org.axonframework.eventsourcing.eventstore.jpa" } )
 public class EmbeddedServerConfiguration {
 
 	@Bean

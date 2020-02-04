@@ -11,6 +11,7 @@ import org.axonframework.queryhandling.QueryInvocationErrorHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.queryhandling.SimpleQueryBus;
 import org.axonframework.spring.config.AxonConfiguration;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -23,12 +24,14 @@ import de.libutzki.axon.playground.axon.common.EmbeddedServer;
 class EmbeddedServerClientConfiguration {
 
 	@Bean( name = "eventStore" )
+	@Qualifier( "eventBus" )
 	@ConditionalOnMissingBean( name = "eventStore" )
 	public EventStore embeddedEventStore( final EmbeddedServer embeddedServer ) {
 		return new EmbeddedEventStore( embeddedServer );
 	}
 
 	@Bean
+	@Qualifier( "localSegment" )
 	@ConditionalOnMissingBean( name = "commandBus" )
 	public CommandBus commandBus( final EmbeddedServer embeddedServer, final AxonConfiguration axonConfiguration, final TransactionManager transactionManager ) {
 		// We create the bus here to avoid that we have multiple busses in the spring conect.
@@ -42,6 +45,7 @@ class EmbeddedServerClientConfiguration {
 	}
 
 	@Bean
+	@Qualifier( "localSegment" )
 	@ConditionalOnMissingBean( name = "queryBus" )
 	public QueryBus queryBus( final EmbeddedServer embeddedServer, final AxonConfiguration axonConfiguration, final TransactionManager transactionManager ) {
 		// We create the bus here to avoid that we have multiple busses in the spring conect. Also in the case of the query bus,
